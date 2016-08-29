@@ -39,6 +39,7 @@ has dir => (
 has screen => (
     is      => 'ro',
     default => sub { Term::Screen->new },
+    lazy    => 1,
     handles => {
         at   => 'at',
         puts => 'puts',
@@ -51,43 +52,41 @@ sub draw {
     $self->puts(
         colored(
             ['blue', 'on_green'],
-            $self->dir == 0   ? 'u'
-            : $self->dir == 1 ? 'r'
-            : $self->dir == 2 ? 'd'
-            :                   'l'
+            $self->dir == 0   ? '↑'
+            : $self->dir == 1 ? '→'
+            : $self->dir == 2 ? '↓'
+            :                   '←'
         )
     );
 }
 
 sub move {
     my ($self, $on_color) = @_;
-    my $step = $on_color eq 'black' ? 1 : -1;
+    my $reverse = $on_color eq 'white';
     $self->moves( $self->moves + 1 );
 
-    my $dir = $self->dir;
+    my $dir = $reverse ? $self->dir - 1 : $self->dir + 1;
+    $dir = $dir < 0 ? 3 : $dir > 3 ? 0 : $dir;
 
     if ( $dir == 0 ) {
-        $self->row( $self->row + $step );
-        $dir++;
+        # move up
+        $self->row( $self->row - 1 );
     }
-    elsif ( $dir == 1 ) {
-        $self->col( $self->col + $step );
-        $dir++;
+    elsif ($dir == 1 ) {
+        # right
+        $self->col( $self->col + 1 );
     }
-    elsif ( $dir == 2 ) {
-        $self->row( $self->row - $step );
-        $dir++;
+    elsif ($dir == 2 ) {
+        # down
+        $self->row( $self->row + 1 );
     }
-    elsif ( $dir == 3 ) {
-        $self->col( $self->col - $step );
-        $dir = 0
+    elsif ($dir == 3 ) {
+        # left
+        $self->col( $self->col - 1 );
     }
     $self->dir($dir);
 
-        $self->at($self->moves,0);
-        $self->puts($self->dir . ' - ' . $self->row . ' x ' . $self->col);
-
-    return $on_color eq 'white' ? 'black' : 'white';
+    return $reverse ? 'black' : 'white';
 }
 
 sub teleport {
