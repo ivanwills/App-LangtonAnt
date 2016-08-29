@@ -74,7 +74,6 @@ sub play {
 
     while (1) {
         $self->at(0, 0);
-        print "\n";
         sleep $self->pause;
         my ($row, $col) = ( $ant->row, $ant->col );
         my $loc = $self->board->[$row][$col];
