@@ -20,13 +20,13 @@ use App::LangtonAnt::Ant;
 our $VERSION = 0.001;
 
 has height => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => Int,
     lazy    => 1,
     default => sub { $_[0]->rows },
 );
 has width => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => Int,
     lazy    => 1,
     default => sub { $_[0]->cols },
@@ -71,6 +71,7 @@ sub play {
 
     $self->clear;
     $ant->draw;
+    my $last = time;
 
     while (1) {
         $self->at(0, 0);
@@ -82,6 +83,54 @@ sub play {
         $self->at($row, $col);
         $self->puts( colored( ['on_' . $loc->{color}], ' ' ) );
         $ant->teleport($self->height, $self->width)->draw;
+
+        if ($last != time) {
+            my $t = Term::Screen->new;
+
+            # check if board size has changed
+            if ($self->height != $t->rows || $self->width != $t->cols ) {
+                $self->height($t->rows);
+                $self->width($t->cols);
+                $self->fix_board;
+            }
+            $last = time;
+        }
+    }
+}
+
+sub fix_board {
+    my ($self) = @_;
+    my $board = $self->board;
+
+    if (@{$board} > $self->height) {
+        @$board = @{$board}[0 .. $self->height - 1];
+    }
+    elsif (@{$board->[0]} > $self->width) {
+        for my $row (@$board) {
+            @$row = @{$row}[0 .. $self->width - 1];
+        }
+    }
+    elsif (@{$board} < $self->height) {
+        # extend board with extra rows
+        for my $i ( @{$board} .. $self->height ) {
+            for my $j (0 .. $self->width) {
+                $board->[$i][$j] = {
+                    color => 'black',
+                };
+            }
+        }
+    }
+    elsif (@{$board->[0]} < $self->width) {
+        my $cols = @{$board->[0]};
+
+        # extend board with extra cols
+        for my $i ( 0 .. $self->height ) {
+            for my $j ($cols .. $self->width) {
+                $board->[$i][$j] = {
+                    color => 'black',
+                };
+            }
+        }
     }
 }
 
