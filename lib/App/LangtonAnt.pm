@@ -115,9 +115,9 @@ sub _new_ant {
     my ($self) = @_;
 
     return App::LangtonAnt::Ant->new(
-        row => int rand $self->height,
-        col => int rand $self->width,
-        dir => int rand 4,
+        row => int $self->height / 2,
+        col => int $self->width / 2,
+        dir => int 0,
     );
 }
 
