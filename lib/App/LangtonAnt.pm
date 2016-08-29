@@ -11,7 +11,7 @@ use warnings;
 use Carp;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
-use Types::Standard qw/Int ArrayRef InstanceOf/;
+use Types::Standard qw/Int Num ArrayRef InstanceOf/;
 use Term::ANSIColor qw/colored/;
 use Term::Screen;
 use Time::HiRes qw/sleep/;
@@ -30,6 +30,16 @@ has width => (
     isa     => Int,
     lazy    => 1,
     default => sub { $_[0]->cols },
+);
+has flipped => (
+    is      => 'ro',
+    isa     => Int,
+    default => 0,
+);
+has pause => (
+    is      => 'ro',
+    isa     => Num,
+    default => 0.1,
 );
 has board => (
     is      => 'rw',
@@ -59,10 +69,13 @@ sub play {
     my ($self) = @_;
     my $ant = $self->ant;
 
+    $self->clear;
     $ant->draw;
 
     while (1) {
-        sleep 0.1;
+        $self->at(0, 0);
+        print "\n";
+        sleep $self->pause;
         my ($row, $col) = ( $ant->row, $ant->col );
         my $loc = $self->board->[$row][$col];
         $loc->{color} = $ant->move($loc->{color});
@@ -85,6 +98,14 @@ sub _new_board {
                 color => 'black',
             };
         }
+    }
+
+    for ( 0 .. $self->flipped - 1) {
+        my $row = int rand $self->height;
+        my $col = int rand $self->width;
+        $board[$row][$col]{color} = 'white';
+        $self->at($row, $col);
+        $self->puts( colored( ['on_white' ], ' ' ) );
     }
 
     return \@board;

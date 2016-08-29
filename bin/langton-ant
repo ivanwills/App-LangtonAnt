@@ -29,6 +29,8 @@ sub main {
         \%option,
         'height|h=i',
         'width|w=i',
+        'flipped|f=i',
+        'pause|p=f',
         'verbose|v+',
         'man',
         'help',
