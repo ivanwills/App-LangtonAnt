@@ -51,6 +51,12 @@ sub main {
     # do stuff here
     my $board = App::LangtonAnt->new(%option);
 
+    local $SIG{INT} = sub {
+        warn "HERE!\n";
+        $board->clear;
+        exit 1;
+    };
+
     $board->play;
 
     return;
